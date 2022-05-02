@@ -1,0 +1,25 @@
+on: [push]
+
+jobs:
+  example:
+    runs-on: ubuntu-20.04
+    name: Test
+    steps:
+      # Gets a copy of the source code in your repository before running API tests
+      - uses: actions/checkout@v3.0.0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # Installs project's dependencies
+      - run: pip install -r apps/python/requirements.txt
+
+      # Start the API in the background
+      - run: python apps/python/app.py &
+
+      - name: TEST
+        uses: ./
+        continue-on-error: true
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          token: ${{ secrets.SCHEMATHESIS_TOKEN }}
