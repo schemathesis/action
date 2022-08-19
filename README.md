@@ -1,6 +1,6 @@
 # Schemathesis API testing
 
-A Github Action for running [Schemathesis](https://github.com/schemathesis/schemathesis) API tests.
+A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemathesis) API tests.
 
 ## Usage
 
