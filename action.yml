@@ -56,13 +56,16 @@ runs:
           pip install schemathesis==${{ inputs.version }}
         fi
       shell: bash
-    - run: ./entrypoint.sh
+    - run: |
+        source env/bin/activate
+        schemathesis run \
+          ${{ inputs.schema }} \
+          --hypothesis-database=:memory: \
+          --hypothesis-max-examples=${{ inputs.max-examples }} \
+          --checks=${{ inputs.checks }} \
+          ${{ inputs.args }} \
       shell: bash
       env:
-        SCHEMA: ${{ inputs.schema }}
-        MAX_EXAMPLES: ${{ inputs.max-examples }}
-        CHECKS: ${{ inputs.checks }}
-        ARGS: ${{ inputs.args }}
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}
         SCHEMATHESIS_API_NAME: ${{ inputs.api-name }}
         SCHEMATHESIS_REPORT: ${{ inputs.report }}
