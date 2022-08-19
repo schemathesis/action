@@ -1,6 +1,7 @@
 # Schemathesis API testing
 
 A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemathesis) API tests.
+If you use GitHub Actions, there is a native [GitHub app](https://github.com/apps/schemathesis) that reports test results directly to your pull requests.
 
 ## Usage
 
