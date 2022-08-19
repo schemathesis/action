@@ -12,7 +12,7 @@ A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schem
     # OPTIONAL. URL that will be used as a prefix for all API operations.
     # Required if the schema is provided as a file.
     # Otherwise, inferred from the schema.
-    base-url: 'http://127.0.0.1'
+    base-url: 'http://127.0.0.1:5001/v2/'
     # OPTIONAL. Your Schemathesis.io token
     token: ${{ secrets.SCHEMATHESIS_TOKEN }}
     # OPTIONAL. API name from Schemathesis.io
