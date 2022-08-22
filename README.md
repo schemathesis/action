@@ -5,6 +5,17 @@ If you use GitHub Actions, there is a native [GitHub app](https://github.com/app
 
 ## Usage
 
+Minimal:
+
+```yaml
+- uses: schemathesis/action@v1
+  with:
+    # API schema location
+    schema: 'http://127.0.0.1:5001/openapi.json'
+```
+
+All options:
+
 ```yaml
 - uses: schemathesis/action@v1
   with:
