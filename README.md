@@ -31,14 +31,15 @@ All options:
     api-name: 'payments-api'
     # OPTIONAL. List of Schemathesis checks to run. Defaults to `all`
     checks: 'not_a_server_error'
-    # OPTIONAL. Whether you'd like to see the results in a Web UI in Schemathesis.io
+    # OPTIONAL. Whether you'd like to see the results in a Web UI
     # Defaults to `true`
     report: 'true'
     # OPTIONAL. Maximum time in seconds to wait on the API schema availability
     wait-for-schema: '30'
     # OPTIONAL. Maximum number of generated examples for each endpoint
     max-examples: 50
-    # OPTIONAL. Specify which version of Schemathesis should be used. Defaults to `latest`
+    # OPTIONAL. Specify which version of Schemathesis should be used. 
+    # Defaults to `latest`
     version: 'latest'
     # OPTIONAL. Extra arguments to pass to Schemathesis
     args: '-D negative'
