@@ -71,3 +71,4 @@ runs:
         SCHEMATHESIS_REPORT: ${{ inputs.report }}
         SCHEMATHESIS_WAIT_FOR_SCHEMA: ${{ inputs.wait-for-schema }}
         SCHEMATHESIS_TOKEN: ${{ inputs.token }}
+        SCHEMATHESIS_ACTION_REF: ${{ github.action_ref }}
