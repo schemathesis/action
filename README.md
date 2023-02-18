@@ -11,7 +11,7 @@ Minimal:
 - uses: schemathesis/action@v1
   with:
     # API schema location
-    schema: 'http://127.0.0.1:5001/openapi.json'
+    schema: 'https://example.schemathesis.io/openapi.json'
 ```
 
 All options:
@@ -20,11 +20,11 @@ All options:
 - uses: schemathesis/action@v1
   with:
     # API schema location
-    schema: 'http://127.0.0.1:5001/openapi.json'
+    schema: 'https://example.schemathesis.io/openapi.json'
     # OPTIONAL. URL that will be used as a prefix for all API operations.
     # Required if the schema is provided as a file.
     # Otherwise, inferred from the schema.
-    base-url: 'http://127.0.0.1:5001/v2/'
+    base-url: 'https://example.schemathesis.io/v2/'
     # OPTIONAL. Your Schemathesis.io token
     token: ${{ secrets.SCHEMATHESIS_TOKEN }}
     # OPTIONAL. API name from Schemathesis.io
@@ -41,6 +41,8 @@ All options:
     # OPTIONAL. Specify which version of Schemathesis should be used. 
     # Defaults to `latest`
     version: 'latest'
+    # OPTIONAL. Schemathesis hooks module. Available for Schemathesis >= 3.18.5 only
+    hooks: 'tests.hooks'
     # OPTIONAL. Extra arguments to pass to Schemathesis
     args: '-D negative'
 ```

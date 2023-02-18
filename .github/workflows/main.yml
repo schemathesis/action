@@ -17,10 +17,18 @@ jobs:
       # Start the API in the background
       - run: python apps/python/app.py &
 
-      - name: TEST
+      - name: Default test
         uses: ./
-        continue-on-error: true
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
           token: ${{ secrets.SCHEMATHESIS_TOKEN }}
           args: '-E success'
+
+      - name: Custom hooks
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          token: ${{ secrets.SCHEMATHESIS_TOKEN }}
+          version: '3.18.5'
+          hooks: 'apps.python.hooks'
+          args: '-c custom_check -E success'
