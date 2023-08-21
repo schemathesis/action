@@ -17,12 +17,16 @@ jobs:
       # Start the API in the background
       - run: python apps/python/app.py &
 
+      # Set sample access token
+      - name: Set access token
+        run: cat apps/python/secret.json | python3 -c "import sys, json; print(f'ACCESS_TOKEN={json.load(sys.stdin)[\"access_token\"]}')" >> $GITHUB_ENV
+
       - name: Default test
         uses: ./
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
           token: ${{ secrets.SCHEMATHESIS_TOKEN }}
-          args: '-E success'
+          args: '-E success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
 
       - name: Custom hooks
         uses: ./
@@ -31,4 +35,4 @@ jobs:
           token: ${{ secrets.SCHEMATHESIS_TOKEN }}
           version: '3.18.5'
           hooks: 'apps.python.hooks'
-          args: '-c custom_check -E success'
+          args: '-c custom_check -E success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'

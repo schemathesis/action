@@ -1,7 +1,17 @@
-from flask import Flask
+import json
+import pathlib
+from flask import Flask, request
 from werkzeug.exceptions import InternalServerError
 
 app = Flask("test_app")
+
+HERE = pathlib.Path(__file__).parent.absolute()
+
+with (HERE / "secret.json").open() as fd:
+    SECRET_DATA = json.load(fd)
+
+
+ACCESS_TOKEN = SECRET_DATA["access_token"]
 
 
 @app.route("/openapi.json")
@@ -45,7 +55,9 @@ def schema():
 
 @app.route("/api/success", methods=["GET"])
 def success():
-    return {"success": True}
+    if "Authorization" in request.headers and request.headers["Authorization"] == f"Bearer {ACCESS_TOKEN}":
+        return {"success": True}
+    return {"detail": "Unauthorized"}, 401
 
 
 @app.route("/api/failure", methods=["GET"])
