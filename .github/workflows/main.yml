@@ -26,7 +26,7 @@ jobs:
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
           token: ${{ secrets.SCHEMATHESIS_TOKEN }}
-          args: '-E success -H Authorization: Bearer {{ env.ACCESS_TOKEN }}'
+          args: '-E success -H Authorization: Bearer ${{ env.ACCESS_TOKEN }}'
 
       - name: Custom hooks
         uses: ./
@@ -35,4 +35,4 @@ jobs:
           token: ${{ secrets.SCHEMATHESIS_TOKEN }}
           version: '3.18.5'
           hooks: 'apps.python.hooks'
-          args: '-c custom_check -E success -H Authorization: Bearer {{ env.ACCESS_TOKEN }}'
+          args: '-c custom_check -E success -H Authorization: Bearer ${{ env.ACCESS_TOKEN }}'
