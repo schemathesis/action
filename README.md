@@ -1,11 +1,6 @@
-# Schemathesis API testing
+# Schemathesis GitHub Action
 
-A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemathesis) API tests.
-If you use GitHub Actions, there is a native [GitHub app](https://github.com/apps/schemathesis) that reports test results directly to your pull requests.
-
-## Usage
-
-Minimal:
+A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemathesis) API tests. Automate your API testing to catch crashes, validate specs, and save time.
 
 ```yaml
 - uses: schemathesis/action@v1
@@ -14,7 +9,14 @@ Minimal:
     schema: 'https://example.schemathesis.io/openapi.json'
 ```
 
-All options:
+## Get test results in your pull requests
+
+Enable [Schemathesis GitHub app](https://github.com/apps/schemathesis) to receive test results as comments in your GitHub pull requests. 
+To use this feature, both the token and the GitHub app are required. Obtain your token by signing up on [Schemathesis.io](https://app.schemathesis.io/auth/sign-up/?utm_source=gh_action&utm_content=readme).
+
+![schemathesis-github-report](https://github.com/schemathesis/action/assets/1236561/d5683253-789c-4794-adc4-e00d96748ba3)
+
+## Configuration
 
 ```yaml
 - uses: schemathesis/action@v1
@@ -22,8 +24,7 @@ All options:
     # API schema location
     schema: 'https://example.schemathesis.io/openapi.json'
     # OPTIONAL. URL that will be used as a prefix for all API operations.
-    # Required if the schema is provided as a file.
-    # Otherwise, inferred from the schema.
+    # Useful when the API schema is maintained separately from the application.
     base-url: 'https://example.schemathesis.io/v2/'
     # OPTIONAL. Your Schemathesis.io token
     token: ${{ secrets.SCHEMATHESIS_TOKEN }}
@@ -47,21 +48,21 @@ All options:
     args: '-D negative'
 ```
 
-### Passing Headers with Schemathesis CLI
-
-When interacting with APIs that require headers, use the `-H` option in the Schemathesis CLI. Ensure the entire header value is enclosed in quotes:
+To add headers like `Authorization`:
 
 ```yaml
 # Save access token to $GITHUB_ENV as ACCESS_TOKEN.
 - name: Set access token
   run: echo "ACCESS_TOKEN=super-secret" >> $GITHUB_ENV
 
-# Use the saved access token in the Schemathesis GitHub action.
 - uses: schemathesis/action@v1
   with:
-    schema: 'https://example.schemathesis.io/openapi.json'
+    schema: 'http://example.com/api/openapi.json'
     args: '-H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
 ```
 
-- Make sure any variables or dynamic content in the header value, like `${{ env.ACCESS_TOKEN }}`, are correctly resolved in your CI environment.
-- Remember, the `-H` option allows you to pass other headers in a similar manner if needed.
+For more options and usage, check the [Schemathesis CLI documentation](https://schemathesis.readthedocs.io/en/stable/cli.html).
+
+## Support
+
+Having issues or questions? Check the [Schemathesis documentation](https://schemathesis.readthedocs.io/en/stable/), join the [Discord community](https://discord.gg/R9ASRAmHnA), or report problems on the [GitHub issue tracker](https://github.com/schemathesis/action/issues).
