@@ -14,7 +14,7 @@ A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schem
 Enable [Schemathesis GitHub app](https://github.com/apps/schemathesis) to receive test results as comments in your GitHub pull requests. 
 To use this feature, both the token and the GitHub app are required. Obtain your token by signing up on [Schemathesis.io](https://app.schemathesis.io/auth/sign-up/?utm_source=gh_action&utm_content=readme).
 
-![schemathesis-github-report](https://github.com/schemathesis/action/assets/1236561/d5683253-789c-4794-adc4-e00d96748ba3)
+![schemathesis-github-report](https://github.com/schemathesis/action/assets/1236561/9e5b8826-1a5e-418f-906a-10aaa51acb05)
 
 ## Configuration
 
