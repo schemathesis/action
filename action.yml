@@ -49,18 +49,17 @@ runs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
+    - uses: astral-sh/setup-uv@v5
+      with:
+        version: ">=0.5.0"
     - run: |
-        pip install --upgrade pip 
-        python3.12 -m venv env
-        source env/bin/activate
         if [ ${{ inputs.version }} == "latest" ] ; then
-          pip install schemathesis
+          uv tool install schemathesis
         else
-          pip install schemathesis==${{ inputs.version }}
+          uv tool install schemathesis==${{ inputs.version }}
         fi
       shell: bash
     - run: |
-        source env/bin/activate
         schemathesis run \
           ${{ inputs.schema }} \
           --hypothesis-database=:memory: \
