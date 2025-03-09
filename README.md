@@ -9,13 +9,6 @@ A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schem
     schema: 'https://example.schemathesis.io/openapi.json'
 ```
 
-## Get test results in your pull requests
-
-Enable [Schemathesis GitHub app](https://github.com/apps/schemathesis) to receive test results as comments in your GitHub pull requests. 
-To use this feature, both the token and the GitHub app are required. Obtain your token by signing up on [Schemathesis.io](https://app.schemathesis.io/auth/sign-up/?utm_source=gh_action&utm_content=readme).
-
-![schemathesis-github-report](https://github.com/schemathesis/action/assets/1236561/9e5b8826-1a5e-418f-906a-10aaa51acb05)
-
 ## Configuration
 
 ```yaml
@@ -26,15 +19,8 @@ To use this feature, both the token and the GitHub app are required. Obtain your
     # OPTIONAL. URL that will be used as a prefix for all API operations.
     # Useful when the API schema is maintained separately from the application.
     base-url: 'https://example.schemathesis.io/v2/'
-    # OPTIONAL. Your Schemathesis.io token
-    token: ${{ secrets.SCHEMATHESIS_TOKEN }}
-    # OPTIONAL. API name from Schemathesis.io
-    api-name: 'payments-api'
     # OPTIONAL. List of Schemathesis checks to run. Defaults to `all`
     checks: 'not_a_server_error'
-    # OPTIONAL. Whether you'd like to see the results in a Web UI
-    # Defaults to `true`
-    report: 'true'
     # OPTIONAL. Maximum time in seconds to wait on the API schema availability
     wait-for-schema: '30'
     # OPTIONAL. Maximum number of generated examples for each endpoint
