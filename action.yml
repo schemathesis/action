@@ -12,19 +12,28 @@ inputs:
     description: 'Base URL address of the API'
     required: false
   api-name:
-    description: 'API name from Schemathesis.io'
+    description: |
+      ~~Deprecated~~
+      API name from Schemathesis.io. No-op: this input is ignored.
     required: false
+    deprecationMessage: 'Input `api-name` is deprecated and will be removed in the next major release.'
   checks:
     description: 'List of Schemathesis checks to run. Defaults to `all`'
     required: false
     default: 'all'
   report:
-    description: "Whether you'd like to see the results in a Web UI in Schemathesis.io"
+    description: |
+      ~~Deprecated~~
+      Whether to send results to Schemathesis.io Web UI. No-op: this input is ignored.
     required: false
     default: 'true'
+    deprecationMessage: 'Input `report` is deprecated and will be removed in the next major release.'
   token:
-    description: 'Your Schemathesis.io token'
+    description: |
+      ~~Deprecated~~
+      Schemathesis.io API token. No-op: this input is ignored.
     required: false
+    deprecationMessage: 'Input `token` is deprecated and will be removed in the next major release.'
   wait-for-schema:
     description: 'Maximum time in seconds to wait on the API schema availability'
     required: false
@@ -36,7 +45,7 @@ inputs:
   version:
     description: 'Specify which version of Schemathesis should be used. Defaults to `latest`'
     required: false
-    default: "latest"
+    default: 'latest'
   hooks:
     description: 'Schemathesis hooks module'
     required: false
@@ -69,9 +78,6 @@ runs:
       shell: bash
       env:
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}
-        SCHEMATHESIS_API_NAME: ${{ inputs.api-name }}
-        SCHEMATHESIS_REPORT: ${{ inputs.report }}
         SCHEMATHESIS_WAIT_FOR_SCHEMA: ${{ inputs.wait-for-schema }}
-        SCHEMATHESIS_TOKEN: ${{ inputs.token }}
         SCHEMATHESIS_HOOKS: ${{ inputs.hooks }}
         SCHEMATHESIS_ACTION_REF: ${{ github.action_ref }}
