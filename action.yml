@@ -71,8 +71,8 @@ runs:
     - run: |
         schemathesis run \
           ${{ inputs.schema }} \
-          --hypothesis-database=:memory: \
-          --hypothesis-max-examples=${{ inputs.max-examples }} \
+          --generation-database=:memory: \
+          --max-examples=${{ inputs.max-examples }} \
           --checks=${{ inputs.checks }} \
           ${{ inputs.args }} \
       shell: bash
