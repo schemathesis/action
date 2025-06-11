@@ -16,7 +16,7 @@ GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemat
   with:
     # API schema location (URL or file path)
     schema: 'https://example.schemathesis.io/openapi.json'
-    # Override base URL from schema
+    # Override base URL
     base-url: 'https://example.schemathesis.io/v2/'
     # Validation checks to run (default: all)
     checks: 'not_a_server_error'

@@ -6,39 +6,39 @@ branding:
   color: 'green'
 inputs:
   schema:
-    description: 'API schema location'
+    description: 'API schema location (URL or file path) '
     required: true
   base-url:
-    description: 'Base URL address of the API'
+    description: 'Override base URL '
     required: false
   checks:
-    description: 'List of Schemathesis checks to run. Defaults to `all`'
+    description: 'Validation checks to run (default: all)'
     required: false
     default: 'all'
   wait-for-schema:
-    description: 'Maximum time in seconds to wait on the API schema availability'
+    description: 'Schema availability timeout in seconds'
     required: false
     default: '2'
   max-examples:
-    description: 'Maximum number of generated examples per each endpoint'
+    description: 'Maximum test cases per API operation'
     required: false
     default: '100'
   version:
-    description: 'Specify which version of Schemathesis should be used. Defaults to `latest`'
+    description: 'Schemathesis version (default: latest)'
     required: false
     default: 'latest'
   hooks:
-    description: 'Schemathesis hooks module'
+    description: 'Python module path for hooks'
     required: false
   args:
-    description: 'Extra arguments to pass to Schemathesis'
+    description: 'Additional CLI arguments'
     required: false
 runs:
   using: 'composite'
   steps:
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
     - uses: astral-sh/setup-uv@v6
       with:
         version: ">=0.5.0"
