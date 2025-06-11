@@ -25,14 +25,12 @@ jobs:
         uses: ./
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
-          token: ${{ secrets.SCHEMATHESIS_TOKEN }}
-          args: '-E success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
+          args: '--include-name-regex success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
 
       - name: Custom hooks
         uses: ./
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
-          token: ${{ secrets.SCHEMATHESIS_TOKEN }}
           version: 'latest'
           hooks: 'apps.python.hooks'
-          args: '-c custom_check -E success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
+          args: '-c custom_check --include-name-regex success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
