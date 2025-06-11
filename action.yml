@@ -1,5 +1,5 @@
 name: 'Schemathesis'
-description: 'Run Schemathesis API testing'
+description: 'Property-based API testing with Schemathesis'
 author: 'Dmitry Dygalo <@Stranger6667> | Schemathesis.io'
 branding:
   icon: 'check-square'

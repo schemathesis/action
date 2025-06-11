@@ -1,6 +1,6 @@
 # Schemathesis GitHub Action
 
-A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemathesis) API tests. Automate your API testing to catch crashes, validate specs, and save time.
+GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemathesis) property-based API tests against OpenAPI and GraphQL schemas.
 
 ```yaml
 - uses: schemathesis/action@v1
@@ -14,41 +14,40 @@ A GitHub Action for running [Schemathesis](https://github.com/schemathesis/schem
 ```yaml
 - uses: schemathesis/action@v1
   with:
-    # API schema location
+    # API schema location (URL or file path)
     schema: 'https://example.schemathesis.io/openapi.json'
-    # OPTIONAL. URL that will be used as a prefix for all API operations.
-    # Useful when the API schema is maintained separately from the application.
+    # Override base URL from schema
     base-url: 'https://example.schemathesis.io/v2/'
-    # OPTIONAL. List of Schemathesis checks to run. Defaults to `all`
+    # Validation checks to run (default: all)
     checks: 'not_a_server_error'
-    # OPTIONAL. Maximum time in seconds to wait on the API schema availability
+    # Schema availability timeout in seconds
     wait-for-schema: '30'
-    # OPTIONAL. Maximum number of generated examples for each endpoint
+    # Test cases per API operation
     max-examples: 50
-    # OPTIONAL. Specify which version of Schemathesis should be used. 
-    # Defaults to `latest`
+    # Schemathesis version (default: latest)
     version: 'latest'
-    # OPTIONAL. Schemathesis hooks module. Available for Schemathesis >= 3.18.5 only
+    # Python module path for hooks
     hooks: 'tests.hooks'
-    # OPTIONAL. Extra arguments to pass to Schemathesis
-    args: '-D negative'
+    # Additional CLI arguments
+    args: '--report-junit-path=/tmp/junit.xml'
 ```
 
 To add headers like `Authorization`:
 
 ```yaml
-# Save access token to $GITHUB_ENV as ACCESS_TOKEN.
-- name: Set access token
-  run: echo "ACCESS_TOKEN=super-secret" >> $GITHUB_ENV
-
-- uses: schemathesis/action@v1
+- name: Run with authentication
+  uses: schemathesis/action@v1
   with:
     schema: 'http://example.com/api/openapi.json'
-    args: '-H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
+    args: '-H "Authorization: Bearer ${{ secrets.API_TOKEN }}"'
 ```
 
-For more options and usage, check the [Schemathesis CLI documentation](https://schemathesis.readthedocs.io/en/stable/cli.html).
+For additional options, see the [Schemathesis CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/).
 
-## Support
+## Resources
 
-Having issues or questions? Check the [Schemathesis documentation](https://schemathesis.readthedocs.io/en/stable/), join the [Discord community](https://discord.gg/R9ASRAmHnA), or report problems on the [GitHub issue tracker](https://github.com/schemathesis/action/issues).
+- [Documentation](https://schemathesis.readthedocs.io/en/stable/)
+- [CLI Reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/)
+- [GitHub Issues](https://github.com/schemathesis/schemathesis/issues)
+- [Discord](https://discord.gg/R9ASRAmHnA)
+
