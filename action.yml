@@ -63,7 +63,7 @@ runs:
         version: ">=0.5.0"
     - run: |
         if [ ${{ inputs.version }} == "latest" ] ; then
-          uv tool install schemathesis
+          uv tool install "schemathesis>=3.39,<4.0"
         else
           uv tool install schemathesis==${{ inputs.version }}
         fi
