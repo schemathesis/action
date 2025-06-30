@@ -30,6 +30,9 @@ inputs:
   hooks:
     description: 'Python module path for hooks'
     required: false
+  config-file:
+    description: 'Path to a `schemathesis.toml` configuration file'
+    required: false
   args:
     description: 'Additional CLI arguments'
     required: false
@@ -50,12 +53,31 @@ runs:
         fi
       shell: bash
     - run: |
-        schemathesis run \
-          ${{ inputs.schema }} \
-          --generation-database=:memory: \
-          --max-examples=${{ inputs.max-examples }} \
-          --checks=${{ inputs.checks }} \
-          ${{ inputs.args }} \
+        set -euo pipefail
+
+        SCHEMA='${{ inputs.schema }}'
+        CHECKS='${{ inputs.checks }}'
+        MAX_EXAMPLES='${{ inputs.max-examples }}'
+        CONFIG_FILE='${{ inputs.config-file }}'
+        ARGS='${{ inputs.args }}'
+
+        eval "ARGS_ARRAY=($ARGS)"
+
+        CMD=(schemathesis)
+        if [[ -n "$CONFIG_FILE" ]]; then
+          CMD+=(--config-file="$CONFIG_FILE")
+        fi
+
+        CMD+=(run
+          "$SCHEMA"
+          --generation-database=":memory:"
+          --max-examples="$MAX_EXAMPLES"
+          --checks="$CHECKS"
+        )
+
+        CMD+=("${ARGS_ARRAY[@]}")
+
+        "${CMD[@]}"
       shell: bash
       env:
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}

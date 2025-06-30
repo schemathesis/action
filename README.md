@@ -28,6 +28,8 @@ GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemat
     version: 'latest'
     # Python module path for hooks
     hooks: 'tests.hooks'
+    # Path to a `schemathesis.toml` configuration file
+    config-file: 'tests/schemathesis-config.yaml'
     # Additional CLI arguments
     args: '--report-junit-path=/tmp/junit.xml'
 ```

@@ -36,3 +36,21 @@ jobs:
           version: 'latest'
           hooks: 'apps.python.hooks'
           args: '-c custom_check --include-name-regex success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
+
+      - name: Write a Schemathesis config file
+        run: |
+          mkdir -p .github/schemathesis
+          cat <<EOF > .github/schemathesis/schemathesis.toml
+          [[operations]]
+          # Disable everything except `GET /success`
+          exclude-name = "GET /success"
+          enabled = false
+          EOF
+
+      - name: With config file
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          version: 'latest'
+          config-file: '.github/schemathesis/schemathesis.toml'
+          args: '-H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
