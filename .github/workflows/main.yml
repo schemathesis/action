@@ -7,7 +7,7 @@ jobs:
     steps:
       # Gets a copy of the source code in your repository before running API tests
       - uses: actions/checkout@v4.2.2
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
