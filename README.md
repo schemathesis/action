@@ -41,7 +41,8 @@ To add headers like `Authorization`:
   uses: schemathesis/action@v2
   with:
     schema: 'http://example.com/api/openapi.json'
-    args: '-H "Authorization: Bearer ${{ secrets.API_TOKEN }}"'
+  env:
+    API_TOKEN: '${{ secrets.API_TOKEN }}'
 ```
 
 For additional options, see the [Schemathesis CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/).
