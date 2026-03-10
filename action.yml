@@ -36,6 +36,9 @@ inputs:
   args:
     description: 'Additional CLI arguments'
     required: false
+  authorization:
+    description: 'Value for the Authorization header (e.g. "Bearer ${{ secrets.API_TOKEN }}")'
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -60,6 +63,7 @@ runs:
         MAX_EXAMPLES='${{ inputs.max-examples }}'
         CONFIG_FILE='${{ inputs.config-file }}'
         ARGS='${{ inputs.args }}'
+        AUTHORIZATION='${{ inputs.authorization }}'
 
         eval "ARGS_ARRAY=($ARGS)"
 
@@ -74,6 +78,10 @@ runs:
           --max-examples="$MAX_EXAMPLES"
           --checks="$CHECKS"
         )
+
+        if [[ -n "$AUTHORIZATION" ]]; then
+          CMD+=(-H "Authorization: $AUTHORIZATION")
+        fi
 
         CMD+=("${ARGS_ARRAY[@]}")
 

@@ -30,18 +30,26 @@ GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemat
     hooks: 'tests.hooks'
     # Path to a `schemathesis.toml` configuration file
     config-file: 'tests/schemathesis-config.yaml'
+    # Authorization header value
+    authorization: 'Bearer ${{ secrets.API_TOKEN }}'
     # Additional CLI arguments
     args: '--report-junit-path=/tmp/junit.xml'
 ```
 
-To add headers like `Authorization`:
+To authenticate requests:
 
 ```yaml
 - name: Run with authentication
   uses: schemathesis/action@v2
   with:
     schema: 'http://example.com/api/openapi.json'
-    args: '-H "Authorization: Bearer ${{ secrets.API_TOKEN }}"'
+    authorization: 'Bearer ${{ secrets.API_TOKEN }}'
+```
+
+For other schemes (Basic, custom):
+
+```yaml
+    authorization: 'Basic ${{ secrets.ENCODED_CREDENTIALS }}'
 ```
 
 For additional options, see the [Schemathesis CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/).

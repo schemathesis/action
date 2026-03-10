@@ -27,6 +27,13 @@ jobs:
         uses: ./
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          args: '--include-name-regex success'
+
+      - name: Authorization via args (backwards compat)
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
           args: '--include-name-regex success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
 
       - name: Custom hooks
@@ -35,7 +42,8 @@ jobs:
           schema: 'http://127.0.0.1:5001/openapi.json'
           version: 'latest'
           hooks: 'apps.python.hooks'
-          args: '-c custom_check --include-name-regex success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          args: '-c custom_check --include-name-regex success'
 
       - name: Write a Schemathesis config file
         run: |
@@ -53,4 +61,4 @@ jobs:
           schema: 'http://127.0.0.1:5001/openapi.json'
           version: 'latest'
           config-file: '.github/schemathesis/schemathesis.toml'
-          args: '-H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
