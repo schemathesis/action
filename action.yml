@@ -39,6 +39,30 @@ inputs:
   authorization:
     description: 'Value for the Authorization header (e.g. "Bearer TOKEN")'
     required: false
+  coverage:
+    description: 'Enable schema coverage tracking with tracecov'
+    required: false
+    default: 'true'
+  coverage-report:
+    description: 'Upload HTML coverage report as a workflow artifact'
+    required: false
+    default: 'true'
+  coverage-report-path:
+    description: 'Path to save the HTML coverage report (relative to workspace root)'
+    required: false
+    default: 'schema-coverage.html'
+  coverage-artifact-name:
+    description: 'Name of the uploaded coverage artifact. Override when using the action multiple times in one workflow to avoid name collisions.'
+    required: false
+    default: 'schema-coverage-report'
+  coverage-pr-comment:
+    description: 'Post coverage summary as a PR comment (requires pull-requests: write)'
+    required: false
+    default: 'true'
+  coverage-step-summary:
+    description: 'Write coverage summary to the workflow step summary'
+    required: false
+    default: 'true'
 runs:
   using: 'composite'
   steps:
@@ -49,10 +73,53 @@ runs:
       with:
         version: ">=0.5.0"
     - run: |
-        if [ ${{ inputs.version }} == "latest" ] ; then
-          uv tool install "schemathesis>=4.0,<5.0"
+        set -euo pipefail
+
+        VERSION='${{ inputs.version }}'
+        COVERAGE='${{ inputs.coverage }}'
+
+        if [[ "$VERSION" == "latest" ]]; then
+          BASE_SPEC="schemathesis>=4.11.1,<5.0"
         else
-          uv tool install schemathesis==${{ inputs.version }}
+          BASE_SPEC="schemathesis==$VERSION"
+        fi
+
+        if [[ "$COVERAGE" == "true" ]]; then
+          uv tool install "$BASE_SPEC" --with "tracecov>=0.16.5"
+        else
+          uv tool install "$BASE_SPEC"
+        fi
+      shell: bash
+    - run: |
+        set -euo pipefail
+
+        COVERAGE='${{ inputs.coverage }}'
+        USER_HOOKS='${{ inputs.hooks }}'
+        HOOK_FILE="/tmp/_st_action_hooks.py"
+
+        if [[ "$COVERAGE" == "true" ]]; then
+          printf '%s' "$USER_HOOKS" > /tmp/_st_user_hooks.txt
+          {
+            echo 'import tracecov.schemathesis'
+            echo 'tracecov.schemathesis.install()'
+            echo ''
+            echo 'import os, sys, importlib.util'
+            echo 'with open("/tmp/_st_user_hooks.txt") as _f:'
+            echo '    _user_hooks = _f.read()'
+            echo 'if _user_hooks:'
+            echo '    if os.path.isfile(_user_hooks):'
+            echo '        _spec = importlib.util.spec_from_file_location("_hooks", _user_hooks)'
+            echo '        _mod = importlib.util.module_from_spec(_spec)'
+            echo '        _spec.loader.exec_module(_mod)'
+            echo '    else:'
+            echo '        sys.path.insert(0, os.getcwd())'
+            echo '        __import__(_user_hooks)'
+          } > "$HOOK_FILE"
+          echo "SCHEMATHESIS_HOOKS=$HOOK_FILE" >> "$GITHUB_ENV"
+        elif [[ -n "$USER_HOOKS" ]]; then
+          echo "SCHEMATHESIS_HOOKS=$USER_HOOKS" >> "$GITHUB_ENV"
+        else
+          echo "SCHEMATHESIS_HOOKS=" >> "$GITHUB_ENV"
         fi
       shell: bash
     - run: |
@@ -64,6 +131,20 @@ runs:
         CONFIG_FILE='${{ inputs.config-file }}'
         ARGS='${{ inputs.args }}'
         AUTHORIZATION='${{ inputs.authorization }}'
+        COVERAGE='${{ inputs.coverage }}'
+        COVERAGE_REPORT_PATH='${{ inputs.coverage-report-path }}'
+        EVENT='${{ github.event_name }}'
+        RUN_ID='${{ github.run_id }}'
+        REPO='${{ github.repository }}'
+
+        if [[ "$COVERAGE" == "true" ]]; then
+          export SCHEMATHESIS_COVERAGE_FORMAT="html,markdown"
+          export SCHEMATHESIS_COVERAGE_REPORT_HTML_PATH="$COVERAGE_REPORT_PATH"
+          export SCHEMATHESIS_COVERAGE_REPORT_MARKDOWN_PATH="/tmp/_st_coverage.md"
+          if [[ "$EVENT" == "pull_request" || "$EVENT" == "pull_request_target" ]]; then
+            export SCHEMATHESIS_COVERAGE_MARKDOWN_IS_PULL_REQUEST="true"
+          fi
+        fi
 
         eval "ARGS_ARRAY=($ARGS)"
 
@@ -90,4 +171,63 @@ runs:
       env:
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}
         SCHEMATHESIS_WAIT_FOR_SCHEMA: ${{ inputs.wait-for-schema }}
-        SCHEMATHESIS_HOOKS: ${{ inputs.hooks }}
+    - if: always()
+      run: |
+        COVERAGE='${{ inputs.coverage }}'
+        STEP_SUMMARY='${{ inputs.coverage-step-summary }}'
+        if [[ "$COVERAGE" == 'true' && "$STEP_SUMMARY" == 'true' && -f '/tmp/_st_coverage.md' ]]; then
+          cat /tmp/_st_coverage.md >> "$GITHUB_STEP_SUMMARY"
+        fi
+      shell: bash
+    - uses: actions/upload-artifact@v4
+      if: always() && inputs.coverage == 'true' && inputs['coverage-report'] == 'true'
+      with:
+        name: ${{ inputs.coverage-artifact-name }}
+        path: ${{ inputs.coverage-report-path }}
+        if-no-files-found: warn
+    - if: always()
+      run: |
+        COVERAGE='${{ inputs.coverage }}'
+        PR_COMMENT='${{ inputs.coverage-pr-comment }}'
+        EVENT='${{ github.event_name }}'
+        PR_NUMBER='${{ github.event.pull_request.number }}'
+        REPO='${{ github.repository }}'
+        RUN_ID='${{ github.run_id }}'
+        ARTIFACT_NAME='${{ inputs.coverage-artifact-name }}'
+        MARKER="<!-- tracecov-coverage-report -->"
+
+        if [[ "$COVERAGE" != "true" || "$PR_COMMENT" != "true" ]]; then
+          exit 0
+        fi
+        if [[ "$EVENT" != "pull_request" && "$EVENT" != "pull_request_target" ]]; then
+          exit 0
+        fi
+        if [[ ! -f /tmp/_st_coverage.md ]]; then
+          exit 0
+        fi
+
+        ARTIFACT_ID=$(gh api "repos/$REPO/actions/runs/$RUN_ID/artifacts" \
+          --jq ".artifacts[] | select(.name == \"$ARTIFACT_NAME\") | .id" 2>/dev/null | head -1)
+
+        {
+          echo "$MARKER"
+          cat /tmp/_st_coverage.md
+          if [[ -n "$ARTIFACT_ID" ]]; then
+            echo ""
+            echo "[Download full HTML report](https://github.com/$REPO/actions/runs/$RUN_ID/artifacts/$ARTIFACT_ID)"
+          fi
+        } > /tmp/_st_pr_body.md
+
+        COMMENT_ID=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+          --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" 2>/dev/null | head -1)
+
+        if [[ -n "$COMMENT_ID" ]]; then
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID" \
+            -X PATCH --field body=@/tmp/_st_pr_body.md || true
+        else
+          gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+            -X POST --field body=@/tmp/_st_pr_body.md || true
+        fi
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}

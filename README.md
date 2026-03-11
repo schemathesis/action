@@ -34,6 +34,14 @@ GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemat
     authorization: 'Bearer ${{ secrets.API_TOKEN }}'
     # Additional CLI arguments
     args: '--report-junit-path=/tmp/junit.xml'
+    # Schema coverage (default: true)
+    coverage: 'true'
+    coverage-report: 'true'
+    coverage-report-path: 'schema-coverage.html'
+    coverage-artifact-name: 'schema-coverage-report'
+    coverage-pr-comment: 'true'
+    # Write coverage summary to the workflow step summary (set to false when using the action multiple times in one job)
+    coverage-step-summary: 'true'
 ```
 
 To authenticate requests:
@@ -53,6 +61,48 @@ For other schemes (Basic, custom):
 ```
 
 For additional options, see the [Schemathesis CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/).
+
+## Coverage reports
+
+Schema coverage is powered by [tracecov](https://docs.tracecov.sh) and enabled by default. Each run generates:
+- A summary in the Actions step summary
+- An HTML report uploaded as a workflow artifact (default name: `schema-coverage-report`)
+- A PR comment with the coverage summary (pull requests only)
+
+Coverage reports are generated even when schemathesis finds failures.
+
+PR comments require `pull-requests: write` in your workflow:
+
+```yaml
+jobs:
+  test:
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: schemathesis/action@v3
+        with:
+          schema: 'http://example.com/api/openapi.json'
+```
+
+If you run the action more than once in a single workflow, set distinct artifact names to avoid conflicts:
+
+```yaml
+- uses: schemathesis/action@v3
+  with:
+    schema: 'http://example.com/api/v1/openapi.json'
+    coverage-artifact-name: 'coverage-v1'
+
+- uses: schemathesis/action@v3
+  with:
+    schema: 'http://example.com/api/v2/openapi.json'
+    coverage-artifact-name: 'coverage-v2'
+```
+
+To disable coverage entirely:
+
+```yaml
+    coverage: 'false'
+```
 
 ## Resources
 

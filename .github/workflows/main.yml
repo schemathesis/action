@@ -1,9 +1,11 @@
-on: [push]
+on: [push, pull_request]
 
 jobs:
   example:
     runs-on: ubuntu-22.04
     name: Test
+    permissions:
+      pull-requests: write
     steps:
       # Gets a copy of the source code in your repository before running API tests
       - uses: actions/checkout@v6.0.2
@@ -28,12 +30,19 @@ jobs:
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
           authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          coverage-artifact-name: 'schema-coverage-default'
+          coverage-step-summary: 'false'
           args: '--include-name-regex success'
+
+      - name: Verify HTML coverage report generated
+        run: test -f schema-coverage.html && echo "OK"
 
       - name: Authorization via args (backwards compat)
         uses: ./
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
+          coverage-artifact-name: 'schema-coverage-args-compat'
+          coverage-step-summary: 'false'
           args: '--include-name-regex success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
 
       - name: Custom hooks
@@ -43,6 +52,8 @@ jobs:
           version: 'latest'
           hooks: 'apps.python.hooks'
           authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          coverage-artifact-name: 'schema-coverage-hooks'
+          coverage-step-summary: 'false'
           args: '-c custom_check --include-name-regex success'
 
       - name: Write a Schemathesis config file
@@ -62,3 +73,31 @@ jobs:
           version: 'latest'
           config-file: '.github/schemathesis/schemathesis.toml'
           authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          coverage-artifact-name: 'schema-coverage-config-file'
+          coverage-step-summary: 'false'
+
+      - name: Coverage with custom hooks
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          hooks: 'apps.python.hooks'
+          coverage-artifact-name: 'schema-coverage-hooks-2'
+          coverage-step-summary: 'false'
+          args: '-c custom_check --include-name-regex success'
+
+      - name: Coverage disabled
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          coverage: 'false'
+          args: '--include-name-regex success'
+
+      - name: Custom coverage artifact name
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          coverage-artifact-name: 'schema-coverage-custom'
+          args: '--include-name-regex success'
