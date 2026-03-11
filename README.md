@@ -3,7 +3,7 @@
 GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemathesis) property-based API tests against OpenAPI and GraphQL schemas.
 
 ```yaml
-- uses: schemathesis/action@v2
+- uses: schemathesis/action@v3
   with:
     # API schema location
     schema: 'https://example.schemathesis.io/openapi.json'
@@ -12,7 +12,7 @@ GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemat
 ## Configuration
 
 ```yaml
-- uses: schemathesis/action@v2
+- uses: schemathesis/action@v3
   with:
     # API schema location (URL or file path)
     schema: 'https://example.schemathesis.io/openapi.json'
@@ -49,7 +49,7 @@ To authenticate requests:
 
 ```yaml
 - name: Run with authentication
-  uses: schemathesis/action@v2
+  uses: schemathesis/action@v3
   with:
     schema: 'http://example.com/api/openapi.json'
     authorization: 'Bearer ${{ secrets.API_TOKEN }}'
