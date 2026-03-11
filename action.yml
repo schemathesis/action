@@ -37,7 +37,7 @@ inputs:
     description: 'Additional CLI arguments'
     required: false
   authorization:
-    description: 'Value for the Authorization header (e.g. "Bearer ${{ secrets.API_TOKEN }}")'
+    description: 'Value for the Authorization header (e.g. "Bearer TOKEN")'
     required: false
 runs:
   using: 'composite'
