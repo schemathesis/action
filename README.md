@@ -40,7 +40,8 @@ GitHub Action for running [Schemathesis](https://github.com/schemathesis/schemat
     coverage-report-path: 'schema-coverage.html'
     coverage-artifact-name: 'schema-coverage-report'
     coverage-pr-comment: 'true'
-    # Write coverage summary to the workflow step summary (set to false when using the action multiple times in one job)
+    # Write coverage summary to the workflow step summary
+    # set to false when using the action multiple times in one job
     coverage-step-summary: 'true'
 ```
 
@@ -68,6 +69,8 @@ Schema coverage is powered by [tracecov](https://docs.tracecov.sh) and enabled b
 - A summary in the Actions step summary
 - An HTML report uploaded as a workflow artifact (default name: `schema-coverage-report`)
 - A PR comment with the coverage summary (pull requests only)
+
+<img width="2236" height="1894" alt="report-demo" src="https://github.com/user-attachments/assets/85c4f138-64f0-434a-938f-e156115853c0" />
 
 Coverage reports are generated even when schemathesis finds failures.
 
