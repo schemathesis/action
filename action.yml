@@ -85,7 +85,7 @@ runs:
         fi
 
         if [[ "$COVERAGE" == "true" ]]; then
-          uv tool install "$BASE_SPEC" --with "tracecov>=0.16.5"
+          uv tool install "$BASE_SPEC" --with "tracecov>=0.16.6"
         else
           uv tool install "$BASE_SPEC"
         fi
