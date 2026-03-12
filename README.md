@@ -107,6 +107,28 @@ To disable coverage entirely:
     coverage: 'false'
 ```
 
+## GitHub Status page
+
+Additionally, you may add the coverage and schemathesis run reports to the [GitHub actions job summary page](https://github.blog/news-insights/product-news/supercharging-github-actions-with-job-summaries/) by adding the steps below.
+
+```yaml
+- name: Publish test report
+  uses: dorny/test-reporter@v2
+  if: always()
+  with:
+    name: Schemathesis
+    path: schemathesis-report/*.xml
+    reporter: java-junit
+
+- name: Upload test results
+  uses: actions/upload-artifact@v7
+  if: always()
+  with:
+    name: schemathesis-results
+    path: schemathesis-report/
+```
+
+
 ## Resources
 
 - [Documentation](https://schemathesis.readthedocs.io/en/stable/)
