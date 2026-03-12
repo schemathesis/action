@@ -128,6 +128,15 @@ Additionally, you may add the coverage and schemathesis run reports to the [GitH
     path: schemathesis-report/
 ```
 
+This will result in the following sections being added to the job summary page
+
+### Run report
+
+![Alt text](./images/gha-run-report.png "Run report screenshot")
+
+### Coverage report
+
+![Alt text](./images/gha-cov-report.png "Coverage report screenshot")
 
 ## Resources
 
