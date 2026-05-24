@@ -65,7 +65,7 @@ For additional options, see the [Schemathesis CLI reference](https://schemathesi
 
 ## Coverage reports
 
-Schema coverage is powered by [tracecov](https://docs.tracecov.sh) and enabled by default. Each run generates:
+Schema coverage is powered by [tracecov](https://tracecov.sh) and enabled by default. Each run generates:
 - A summary in the Actions step summary
 - An HTML report uploaded as a workflow artifact (default name: `schema-coverage-report`)
 - A PR comment with the coverage summary (pull requests only)
