@@ -70,7 +70,8 @@ Schema coverage is powered by [tracecov](https://tracecov.sh) and enabled by def
 - An HTML report uploaded as a workflow artifact (default name: `schema-coverage-report`)
 - A PR comment with the coverage summary (pull requests only)
 
-<img width="2236" height="1894" alt="report-demo" src="https://github.com/user-attachments/assets/85c4f138-64f0-434a-938f-e156115853c0" />
+<img width="2560" height="2400" alt="report-demo" src="https://github.com/user-attachments/assets/4808629f-ca0f-4682-a464-801da6105aaa" />
+
 
 Coverage reports are generated even when schemathesis finds failures.
 
