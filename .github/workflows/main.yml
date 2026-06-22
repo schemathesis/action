@@ -8,7 +8,7 @@ jobs:
       pull-requests: write
     steps:
       # Gets a copy of the source code in your repository before running API tests
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v7.0.0
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
