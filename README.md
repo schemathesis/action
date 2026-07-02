@@ -75,13 +75,14 @@ Schema coverage is powered by [tracecov](https://tracecov.sh) and enabled by def
 
 Coverage reports are generated even when schemathesis finds failures.
 
-PR comments require `pull-requests: write` in your workflow:
+PR comments require `pull-requests: write` and `actions: read` in your workflow:
 
 ```yaml
 jobs:
   test:
     permissions:
       pull-requests: write
+      actions: read
     steps:
       - uses: schemathesis/action@v3
         with:
