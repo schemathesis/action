@@ -109,7 +109,7 @@ Each run uploads an artifact, and artifact names must be unique within a workflo
     coverage-artifact-name: 'coverage-v2'
 ```
 
-All runs share one PR comment, so the last run's summary replaces the others. Set `coverage-pr-comment: 'false'` on the runs whose comment you don't need. In a single job, set `coverage-step-summary: 'false'` on all but one run to keep the job summary readable.
+Each artifact name gets its own PR comment, labelled with that name. Set `coverage-pr-comment: 'false'` on the runs whose comment you don't need. In a single job, set `coverage-step-summary: 'false'` on all but one run to keep the job summary readable.
 
 ## Test results in the job summary
 

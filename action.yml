@@ -195,6 +195,10 @@ runs:
         RUN_ID='${{ github.run_id }}'
         ARTIFACT_NAME='${{ inputs.coverage-artifact-name }}'
         MARKER="<!-- tracecov-coverage-report -->"
+        # Default name keeps the plain marker so existing comments stay linked
+        if [[ "$ARTIFACT_NAME" != "schema-coverage-report" ]]; then
+          MARKER="<!-- tracecov-coverage-report:$ARTIFACT_NAME -->"
+        fi
 
         if [[ "$COVERAGE" != "true" || "$PR_COMMENT" != "true" ]]; then
           exit 0
@@ -211,6 +215,10 @@ runs:
 
         {
           echo "$MARKER"
+          if [[ "$ARTIFACT_NAME" != "schema-coverage-report" ]]; then
+            echo "**$ARTIFACT_NAME**"
+            echo ""
+          fi
           cat /tmp/_st_coverage.md
           if [[ -n "$ARTIFACT_ID" ]]; then
             echo ""
@@ -218,15 +226,18 @@ runs:
           fi
         } > /tmp/_st_pr_body.md
 
-        COMMENT_ID=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+        COMMENT_ID=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
           --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" 2>/dev/null | head -1)
 
         if [[ -n "$COMMENT_ID" ]]; then
           gh api "repos/$REPO/issues/comments/$COMMENT_ID" \
-            -X PATCH --field body=@/tmp/_st_pr_body.md || true
+            -X PATCH --field body=@/tmp/_st_pr_body.md || FAILED=1
         else
           gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
-            -X POST --field body=@/tmp/_st_pr_body.md || true
+            -X POST --field body=@/tmp/_st_pr_body.md || FAILED=1
+        fi
+        if [[ -n "${FAILED:-}" ]]; then
+          echo "::warning::Could not post the coverage PR comment. Grant the job 'pull-requests: write'; PRs from forks get a read-only token."
         fi
       shell: bash
       env:
