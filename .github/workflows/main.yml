@@ -42,6 +42,7 @@ jobs:
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
           coverage-artifact-name: 'schema-coverage-args-compat'
+          coverage-pr-comment: 'false'
           coverage-step-summary: 'false'
           args: '--include-name-regex success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
 
@@ -53,6 +54,7 @@ jobs:
           hooks: 'apps.python.hooks'
           authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
           coverage-artifact-name: 'schema-coverage-hooks'
+          coverage-pr-comment: 'false'
           coverage-step-summary: 'false'
           args: '-c custom_check --include-name-regex success'
 
@@ -74,6 +76,7 @@ jobs:
           config-file: '.github/schemathesis/schemathesis.toml'
           authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
           coverage-artifact-name: 'schema-coverage-config-file'
+          coverage-pr-comment: 'false'
           coverage-step-summary: 'false'
 
       - name: Coverage with custom hooks
@@ -83,6 +86,7 @@ jobs:
           authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
           hooks: 'apps.python.hooks'
           coverage-artifact-name: 'schema-coverage-hooks-2'
+          coverage-pr-comment: 'false'
           coverage-step-summary: 'false'
           args: '-c custom_check --include-name-regex success'
 
