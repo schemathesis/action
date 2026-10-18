@@ -95,16 +95,16 @@ runs:
 
         COVERAGE='${{ inputs.coverage }}'
         USER_HOOKS='${{ inputs.hooks }}'
-        HOOK_FILE="$ST_TMP/hooks.py"
+        HOOK_FILE="$TMP_DIR/hooks.py"
 
         if [[ "$COVERAGE" == "true" ]]; then
-          printf '%s' "$USER_HOOKS" > "$ST_TMP/user_hooks.txt"
+          printf '%s' "$USER_HOOKS" > "$TMP_DIR/user_hooks.txt"
           {
             echo 'import tracecov.schemathesis'
             echo 'tracecov.schemathesis.install()'
             echo ''
             echo 'import os, sys, importlib.util'
-            echo "with open(\"$ST_TMP/user_hooks.txt\") as _f:"
+            echo "with open(\"$TMP_DIR/user_hooks.txt\") as _f:"
             echo '    _user_hooks = _f.read()'
             echo 'if _user_hooks:'
             echo '    if os.path.isfile(_user_hooks):'
@@ -121,7 +121,7 @@ runs:
         fi
       shell: bash
       env:
-        ST_TMP: ${{ steps.tmp.outputs.dir }}
+        TMP_DIR: ${{ steps.tmp.outputs.dir }}
     - run: |
         set -euo pipefail
 
@@ -140,7 +140,7 @@ runs:
         if [[ "$COVERAGE" == "true" ]]; then
           export SCHEMATHESIS_COVERAGE_FORMAT="html,markdown"
           export SCHEMATHESIS_COVERAGE_REPORT_HTML_PATH="$COVERAGE_REPORT_PATH"
-          export SCHEMATHESIS_COVERAGE_REPORT_MARKDOWN_PATH="$ST_TMP/coverage.md"
+          export SCHEMATHESIS_COVERAGE_REPORT_MARKDOWN_PATH="$TMP_DIR/coverage.md"
           if [[ "$EVENT" == "pull_request" || "$EVENT" == "pull_request_target" ]]; then
             export SCHEMATHESIS_COVERAGE_MARKDOWN_IS_PULL_REQUEST="true"
           fi
@@ -172,7 +172,7 @@ runs:
         "${CMD[@]}"
       shell: bash
       env:
-        ST_TMP: ${{ steps.tmp.outputs.dir }}
+        TMP_DIR: ${{ steps.tmp.outputs.dir }}
         SCHEMATHESIS_HOOKS: ${{ steps.hooks.outputs.path }}
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}
         SCHEMATHESIS_WAIT_FOR_SCHEMA: ${{ inputs.wait-for-schema }}
@@ -180,12 +180,12 @@ runs:
       run: |
         COVERAGE='${{ inputs.coverage }}'
         STEP_SUMMARY='${{ inputs.coverage-step-summary }}'
-        if [[ "$COVERAGE" == 'true' && "$STEP_SUMMARY" == 'true' && -f "$ST_TMP/coverage.md" ]]; then
-          cat "$ST_TMP/coverage.md" >> "$GITHUB_STEP_SUMMARY"
+        if [[ "$COVERAGE" == 'true' && "$STEP_SUMMARY" == 'true' && -f "$TMP_DIR/coverage.md" ]]; then
+          cat "$TMP_DIR/coverage.md" >> "$GITHUB_STEP_SUMMARY"
         fi
       shell: bash
       env:
-        ST_TMP: ${{ steps.tmp.outputs.dir }}
+        TMP_DIR: ${{ steps.tmp.outputs.dir }}
     - uses: actions/upload-artifact@v7
       if: always() && inputs.coverage == 'true' && inputs['coverage-report'] == 'true'
       with:
@@ -213,7 +213,7 @@ runs:
         if [[ "$EVENT" != "pull_request" && "$EVENT" != "pull_request_target" ]]; then
           exit 0
         fi
-        if [[ ! -f "$ST_TMP/coverage.md" ]]; then
+        if [[ ! -f "$TMP_DIR/coverage.md" ]]; then
           exit 0
         fi
 
@@ -226,27 +226,27 @@ runs:
             echo "**$ARTIFACT_NAME**"
             echo ""
           fi
-          cat "$ST_TMP/coverage.md"
+          cat "$TMP_DIR/coverage.md"
           if [[ -n "$ARTIFACT_ID" ]]; then
             echo ""
             echo "[Download full HTML report](https://github.com/$REPO/actions/runs/$RUN_ID/artifacts/$ARTIFACT_ID)"
           fi
-        } > "$ST_TMP/pr_body.md"
+        } > "$TMP_DIR/pr_body.md"
 
         COMMENT_ID=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
           --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" 2>/dev/null | head -1)
 
         if [[ -n "$COMMENT_ID" ]]; then
           gh api "repos/$REPO/issues/comments/$COMMENT_ID" \
-            -X PATCH --field body=@"$ST_TMP/pr_body.md" || FAILED=1
+            -X PATCH --field body=@"$TMP_DIR/pr_body.md" || FAILED=1
         else
           gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
-            -X POST --field body=@"$ST_TMP/pr_body.md" || FAILED=1
+            -X POST --field body=@"$TMP_DIR/pr_body.md" || FAILED=1
         fi
         if [[ -n "${FAILED:-}" ]]; then
           echo "::warning::Could not post the coverage PR comment. Grant the job 'pull-requests: write'; PRs from forks get a read-only token."
         fi
       shell: bash
       env:
-        ST_TMP: ${{ steps.tmp.outputs.dir }}
+        TMP_DIR: ${{ steps.tmp.outputs.dir }}
         GH_TOKEN: ${{ github.token }}
