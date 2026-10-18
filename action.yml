@@ -89,7 +89,8 @@ runs:
           uv tool install --python 3.13 "$BASE_SPEC"
         fi
       shell: bash
-    - run: |
+    - id: hooks
+      run: |
         set -euo pipefail
 
         COVERAGE='${{ inputs.coverage }}'
@@ -114,11 +115,9 @@ runs:
             echo '        sys.path.insert(0, os.getcwd())'
             echo '        __import__(_user_hooks)'
           } > "$HOOK_FILE"
-          echo "SCHEMATHESIS_HOOKS=$HOOK_FILE" >> "$GITHUB_ENV"
-        elif [[ -n "$USER_HOOKS" ]]; then
-          echo "SCHEMATHESIS_HOOKS=$USER_HOOKS" >> "$GITHUB_ENV"
+          echo "path=$HOOK_FILE" >> "$GITHUB_OUTPUT"
         else
-          echo "SCHEMATHESIS_HOOKS=" >> "$GITHUB_ENV"
+          echo "path=$USER_HOOKS" >> "$GITHUB_OUTPUT"
         fi
       shell: bash
       env:
@@ -174,6 +173,7 @@ runs:
       shell: bash
       env:
         ST_TMP: ${{ steps.tmp.outputs.dir }}
+        SCHEMATHESIS_HOOKS: ${{ steps.hooks.outputs.path }}
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}
         SCHEMATHESIS_WAIT_FOR_SCHEMA: ${{ inputs.wait-for-schema }}
     - if: always()
