@@ -133,3 +133,20 @@ jobs:
 
       - name: Verify no coverage files shared between runs
         run: test -z "$(ls /tmp/_st_* 2>/dev/null)"
+
+      - name: Put the caller's own Python first on PATH
+        run: |
+          mkdir -p "$RUNNER_TEMP/caller-python"
+          ln -s "$(command -v python)" "$RUNNER_TEMP/caller-python/python"
+          echo "$RUNNER_TEMP/caller-python" >> "$GITHUB_PATH"
+
+      - name: Run without touching the caller's Python
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          coverage: 'false'
+          args: '--include-name-regex success'
+
+      - name: Verify the caller's Python is still first on PATH
+        run: test "$(command -v python)" = "$RUNNER_TEMP/caller-python/python"
