@@ -12,17 +12,15 @@ inputs:
     description: 'Override base URL '
     required: false
   checks:
-    description: 'Validation checks to run (default: all)'
+    description: 'Validation checks to run (default: from the config file, else all except max_response_time)'
     required: false
-    default: 'all'
   wait-for-schema:
     description: 'Schema availability timeout in seconds'
     required: false
     default: '2'
   max-examples:
-    description: 'Maximum test cases per API operation'
+    description: 'Maximum test cases per API operation (default: from the config file, else 100)'
     required: false
-    default: '100'
   version:
     description: 'Schemathesis version (default: latest)'
     required: false
@@ -153,12 +151,15 @@ runs:
           CMD+=(--config-file="$CONFIG_FILE")
         fi
 
-        CMD+=(run
-          "$SCHEMA"
-          --generation-database=":memory:"
-          --max-examples="$MAX_EXAMPLES"
-          --checks="$CHECKS"
-        )
+        CMD+=(run "$SCHEMA" --generation-database=":memory:")
+
+        # Unset inputs are left out so that `schemathesis.toml` applies
+        if [[ -n "$MAX_EXAMPLES" ]]; then
+          CMD+=(--max-examples="$MAX_EXAMPLES")
+        fi
+        if [[ -n "$CHECKS" ]]; then
+          CMD+=(--checks="$CHECKS")
+        fi
 
         if [[ -n "$AUTHORIZATION" ]]; then
           CMD+=(-H "Authorization: $AUTHORIZATION")

@@ -18,7 +18,7 @@ Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based 
     schema: 'https://example.schemathesis.io/openapi.json'
     # Override the base URL from the schema
     base-url: 'https://example.schemathesis.io/v2/'
-    # Checks to run (default: all)
+    # Checks to run (default: all except `max_response_time`)
     checks: 'not_a_server_error'
     # Seconds to wait for the schema to become available (default: 2)
     wait-for-schema: '30'
@@ -53,6 +53,8 @@ Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based 
 ```
 
 `args` passes extra flags to `schemathesis run`. See the [CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/) for the full list.
+
+`checks` and `max-examples` override `schemathesis.toml` when set. Leave them out to use the config file. `wait-for-schema` always overrides it, so set the wait with the input.
 
 ## Coverage reports
 

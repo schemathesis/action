@@ -79,6 +79,23 @@ jobs:
           coverage-pr-comment: 'false'
           coverage-step-summary: 'false'
 
+      - name: Write a config file that disables checks
+        run: |
+          cat <<EOF > .github/schemathesis/disabled-checks.toml
+          [checks]
+          not_a_server_error.enabled = false
+          status_code_conformance.enabled = false
+          EOF
+
+      # `GET /failure` answers 500, so this passes only if the action keeps the config file's checks
+      - name: Config file checks are not overridden
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          config-file: '.github/schemathesis/disabled-checks.toml'
+          coverage: 'false'
+          args: '--include-name-regex failure'
+
       - name: Coverage with custom hooks
         uses: ./
         with:
