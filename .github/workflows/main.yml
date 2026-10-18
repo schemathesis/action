@@ -153,3 +153,21 @@ jobs:
 
       - name: Verify hooks do not leak into later steps
         run: test -z "${SCHEMATHESIS_HOOKS+set}"
+
+      # Input values are data, so quotes in them must not break the action's scripts
+      - name: Copy config file to a path with a quote
+        run: cp .github/schemathesis/schemathesis.toml ".github/schemathesis/it's.toml"
+
+      - name: Inputs with quotes
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          config-file: ".github/schemathesis/it's.toml"
+          coverage-report-path: "it's.html"
+          coverage-artifact-name: "schema-coverage-it's"
+          coverage-pr-comment: 'false'
+          coverage-step-summary: 'false'
+
+      - name: Verify coverage report with a quoted path
+        run: test -f "it's.html"

@@ -74,9 +74,6 @@ runs:
     - run: |
         set -euo pipefail
 
-        VERSION='${{ inputs.version }}'
-        COVERAGE='${{ inputs.coverage }}'
-
         if [[ "$VERSION" == "latest" ]]; then
           BASE_SPEC="schemathesis>=4.11.1,<5.0"
         else
@@ -89,12 +86,13 @@ runs:
           uv tool install --python 3.13 "$BASE_SPEC"
         fi
       shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        COVERAGE: ${{ inputs.coverage }}
     - id: hooks
       run: |
         set -euo pipefail
 
-        COVERAGE='${{ inputs.coverage }}'
-        USER_HOOKS='${{ inputs.hooks }}'
         HOOK_FILE="$TMP_DIR/hooks.py"
 
         if [[ "$COVERAGE" == "true" ]]; then
@@ -121,21 +119,11 @@ runs:
         fi
       shell: bash
       env:
+        COVERAGE: ${{ inputs.coverage }}
+        USER_HOOKS: ${{ inputs.hooks }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
     - run: |
         set -euo pipefail
-
-        SCHEMA='${{ inputs.schema }}'
-        CHECKS='${{ inputs.checks }}'
-        MAX_EXAMPLES='${{ inputs.max-examples }}'
-        CONFIG_FILE='${{ inputs.config-file }}'
-        ARGS='${{ inputs.args }}'
-        AUTHORIZATION='${{ inputs.authorization }}'
-        COVERAGE='${{ inputs.coverage }}'
-        COVERAGE_REPORT_PATH='${{ inputs.coverage-report-path }}'
-        EVENT='${{ github.event_name }}'
-        RUN_ID='${{ github.run_id }}'
-        REPO='${{ github.repository }}'
 
         if [[ "$COVERAGE" == "true" ]]; then
           export SCHEMATHESIS_COVERAGE_FORMAT="html,markdown"
@@ -172,19 +160,28 @@ runs:
         "${CMD[@]}"
       shell: bash
       env:
+        SCHEMA: ${{ inputs.schema }}
+        CHECKS: ${{ inputs.checks }}
+        MAX_EXAMPLES: ${{ inputs.max-examples }}
+        CONFIG_FILE: ${{ inputs.config-file }}
+        ARGS: ${{ inputs.args }}
+        AUTHORIZATION: ${{ inputs.authorization }}
+        COVERAGE: ${{ inputs.coverage }}
+        COVERAGE_REPORT_PATH: ${{ inputs.coverage-report-path }}
+        EVENT: ${{ github.event_name }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
         SCHEMATHESIS_HOOKS: ${{ steps.hooks.outputs.path }}
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}
         SCHEMATHESIS_WAIT_FOR_SCHEMA: ${{ inputs.wait-for-schema }}
     - if: always()
       run: |
-        COVERAGE='${{ inputs.coverage }}'
-        STEP_SUMMARY='${{ inputs.coverage-step-summary }}'
         if [[ "$COVERAGE" == 'true' && "$STEP_SUMMARY" == 'true' && -f "$TMP_DIR/coverage.md" ]]; then
           cat "$TMP_DIR/coverage.md" >> "$GITHUB_STEP_SUMMARY"
         fi
       shell: bash
       env:
+        COVERAGE: ${{ inputs.coverage }}
+        STEP_SUMMARY: ${{ inputs.coverage-step-summary }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
     - uses: actions/upload-artifact@v7
       if: always() && inputs.coverage == 'true' && inputs['coverage-report'] == 'true'
@@ -194,13 +191,6 @@ runs:
         if-no-files-found: warn
     - if: always()
       run: |
-        COVERAGE='${{ inputs.coverage }}'
-        PR_COMMENT='${{ inputs.coverage-pr-comment }}'
-        EVENT='${{ github.event_name }}'
-        PR_NUMBER='${{ github.event.pull_request.number }}'
-        REPO='${{ github.repository }}'
-        RUN_ID='${{ github.run_id }}'
-        ARTIFACT_NAME='${{ inputs.coverage-artifact-name }}'
         MARKER="<!-- tracecov-coverage-report -->"
         # Default name keeps the plain marker so existing comments stay linked
         if [[ "$ARTIFACT_NAME" != "schema-coverage-report" ]]; then
@@ -248,5 +238,12 @@ runs:
         fi
       shell: bash
       env:
+        COVERAGE: ${{ inputs.coverage }}
+        PR_COMMENT: ${{ inputs.coverage-pr-comment }}
+        EVENT: ${{ github.event_name }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPO: ${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
+        ARTIFACT_NAME: ${{ inputs.coverage-artifact-name }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
         GH_TOKEN: ${{ github.token }}
