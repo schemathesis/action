@@ -64,9 +64,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-python@v6
-      with:
-        python-version: '3.13'
     - uses: astral-sh/setup-uv@v7
       with:
         version: ">=0.5.0"
@@ -87,9 +84,9 @@ runs:
         fi
 
         if [[ "$COVERAGE" == "true" ]]; then
-          uv tool install "$BASE_SPEC" --with "tracecov>=0.21.0"
+          uv tool install --python 3.13 "$BASE_SPEC" --with "tracecov>=0.21.0"
         else
-          uv tool install "$BASE_SPEC"
+          uv tool install --python 3.13 "$BASE_SPEC"
         fi
       shell: bash
     - run: |
