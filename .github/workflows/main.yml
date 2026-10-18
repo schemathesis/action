@@ -8,12 +8,12 @@ jobs:
       pull-requests: write
     steps:
       # Gets a copy of the source code in your repository before running API tests
-      - uses: actions/checkout@v7.0.1
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.13'
 
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
       # Installs project's dependencies
       - run: uv pip install --system -r apps/python/requirements.txt
