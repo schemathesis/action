@@ -1,0 +1,4 @@
+rules:
+  # `nektos/act` cannot run `uses: $/`, and the action is tested locally with it
+  self-repository:
+    disable: true
