@@ -122,3 +122,14 @@ jobs:
           authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
           coverage-artifact-name: 'schema-coverage-custom'
           args: '--include-name-regex success'
+
+      # A run that fails before writing coverage must not reuse files from an earlier run
+      - name: Unreachable schema
+        continue-on-error: true
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:1/openapi.json'
+          coverage-artifact-name: 'schema-coverage-unreachable'
+
+      - name: Verify no coverage files shared between runs
+        run: test -z "$(ls /tmp/_st_* 2>/dev/null)"
