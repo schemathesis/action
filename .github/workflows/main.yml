@@ -150,3 +150,6 @@ jobs:
 
       - name: Verify the caller's Python is still first on PATH
         run: test "$(command -v python)" = "$RUNNER_TEMP/caller-python/python"
+
+      - name: Verify hooks do not leak into later steps
+        run: test -z "${SCHEMATHESIS_HOOKS+set}"
