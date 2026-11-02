@@ -6,7 +6,7 @@ branding:
   color: 'green'
 inputs:
   schema:
-    description: 'API schema location (URL or file path) '
+    description: 'API schema location (URL, file path, or `grpc://` target) '
     required: true
   base-url:
     description: 'Override base URL '
@@ -71,13 +71,40 @@ runs:
     - id: tmp
       run: echo "dir=$(mktemp -d "$RUNNER_TEMP/schemathesis-XXXXXX")" >> "$GITHUB_OUTPUT"
       shell: bash
+    - id: target
+      run: |
+        set -euo pipefail
+
+        GRPC=false
+        case "$SCHEMA" in
+          grpc://*|grpcs://*|*.binpb|*.pb|*.protoset|*.desc) GRPC=true ;;
+        esac
+        echo "grpc=$GRPC" >> "$GITHUB_OUTPUT"
+
+        if [[ "$GRPC" == "true" && "$COVERAGE" == "true" ]]; then
+          echo "::notice::tracecov does not support gRPC, skipping schema coverage"
+          COVERAGE=false
+        fi
+        echo "coverage=$COVERAGE" >> "$GITHUB_OUTPUT"
+      shell: bash
+      env:
+        SCHEMA: ${{ inputs.schema }}
+        COVERAGE: ${{ inputs.coverage }}
     - run: |
         set -euo pipefail
 
-        if [[ "$VERSION" == "latest" ]]; then
-          BASE_SPEC="schemathesis>=4.11.1,<5.0"
+        if [[ "$GRPC" == "true" ]]; then
+          PACKAGE="schemathesis[grpc]"
+          MINIMUM="4.33.0"
         else
-          BASE_SPEC="schemathesis==$VERSION"
+          PACKAGE="schemathesis"
+          MINIMUM="4.11.1"
+        fi
+
+        if [[ "$VERSION" == "latest" ]]; then
+          BASE_SPEC="$PACKAGE>=$MINIMUM,<5.0"
+        else
+          BASE_SPEC="$PACKAGE==$VERSION"
         fi
 
         if [[ "$COVERAGE" == "true" ]]; then
@@ -88,7 +115,8 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
-        COVERAGE: ${{ inputs.coverage }}
+        GRPC: ${{ steps.target.outputs.grpc }}
+        COVERAGE: ${{ steps.target.outputs.coverage }}
     - id: hooks
       run: |
         set -euo pipefail
@@ -119,7 +147,7 @@ runs:
         fi
       shell: bash
       env:
-        COVERAGE: ${{ inputs.coverage }}
+        COVERAGE: ${{ steps.target.outputs.coverage }}
         USER_HOOKS: ${{ inputs.hooks }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
     - run: |
@@ -166,7 +194,7 @@ runs:
         CONFIG_FILE: ${{ inputs.config-file }}
         ARGS: ${{ inputs.args }}
         AUTHORIZATION: ${{ inputs.authorization }}
-        COVERAGE: ${{ inputs.coverage }}
+        COVERAGE: ${{ steps.target.outputs.coverage }}
         COVERAGE_REPORT_PATH: ${{ inputs.coverage-report-path }}
         EVENT: ${{ github.event_name }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
@@ -180,11 +208,11 @@ runs:
         fi
       shell: bash
       env:
-        COVERAGE: ${{ inputs.coverage }}
+        COVERAGE: ${{ steps.target.outputs.coverage }}
         STEP_SUMMARY: ${{ inputs.coverage-step-summary }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      if: always() && inputs.coverage == 'true' && inputs['coverage-report'] == 'true'
+      if: always() && steps.target.outputs.coverage == 'true' && inputs['coverage-report'] == 'true'
       with:
         name: ${{ inputs.coverage-artifact-name }}
         path: ${{ inputs.coverage-report-path }}
@@ -238,7 +266,7 @@ runs:
         fi
       shell: bash
       env:
-        COVERAGE: ${{ inputs.coverage }}
+        COVERAGE: ${{ steps.target.outputs.coverage }}
         PR_COMMENT: ${{ inputs.coverage-pr-comment }}
         EVENT: ${{ github.event_name }}
         PR_NUMBER: ${{ github.event.pull_request.number }}

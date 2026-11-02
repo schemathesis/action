@@ -1,6 +1,6 @@
 # Schemathesis GitHub Action
 
-Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based tests against your OpenAPI or GraphQL API.
+Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based tests against your OpenAPI, GraphQL or gRPC API.
 
 ```yaml
 - uses: schemathesis/action@v3
@@ -55,6 +55,23 @@ Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based 
 `args` passes extra flags to `schemathesis run`. See the [CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/) for the full list.
 
 `checks` and `max-examples` override `schemathesis.toml` when set. Leave them out to use the config file. `wait-for-schema` always overrides it, so set the wait with the input.
+
+## gRPC
+
+Point `schema` at a server with reflection enabled, or at a descriptor set and pass the server in `base-url`:
+
+```yaml
+- uses: schemathesis/action@v3
+  with:
+    schema: 'grpc://127.0.0.1:50051'
+
+- uses: schemathesis/action@v3
+  with:
+    schema: 'api.binpb'
+    base-url: 'grpc://127.0.0.1:50051'
+```
+
+The action installs the `grpc` extra when `schema` starts with `grpc://` or `grpcs://`, or ends with `.binpb`, `.pb`, `.protoset` or `.desc`. gRPC needs Schemathesis 4.33.0 or later. Coverage reports are skipped for gRPC, since tracecov does not support it.
 
 ## Coverage reports
 
