@@ -167,8 +167,6 @@ runs:
           fi
         fi
 
-        eval "ARGS_ARRAY=($ARGS)"
-
         CMD=(schemathesis)
         if [[ -n "$CONFIG_FILE" ]]; then
           CMD+=(--config-file="$CONFIG_FILE")
@@ -188,7 +186,16 @@ runs:
           CMD+=(-H "Authorization: $AUTHORIZATION")
         fi
 
-        CMD+=("${ARGS_ARRAY[@]}")
+        # Split `args` like a shell would, expanding environment variables and nothing else
+        uv run --no-project --python 3.13 python -I -c '
+        import os, posixpath, shlex, sys
+        for arg in shlex.split(os.environ["ARGS"].replace("\\\n", "")):
+            sys.stdout.buffer.write(os.fsencode(posixpath.expandvars(arg)) + b"\0")
+        ' > "$TMP_DIR/args"
+        # No `mapfile`: macOS runners ship bash 3.2
+        while IFS= read -r -d '' ARG; do
+          CMD+=("$ARG")
+        done < "$TMP_DIR/args"
 
         "${CMD[@]}"
       shell: bash

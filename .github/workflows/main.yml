@@ -77,6 +77,30 @@ jobs:
           coverage-step-summary: 'false'
           args: '--include-name-regex success -H "Authorization: Bearer ${{ env.ACCESS_TOKEN }}"'
 
+      # `args` is data: command substitution in it must stay literal text
+      - name: Command substitution in args
+        continue-on-error: true
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          coverage: 'false'
+          args: '--include-name-regex success $(touch "$RUNNER_TEMP/pwned") `touch "$RUNNER_TEMP/pwned"`'
+
+      - name: Verify args did not run a command
+        run: test ! -e "$RUNNER_TEMP/pwned"
+
+      - name: Environment variables and multiple lines in args
+        uses: ./
+        env:
+          NAME: success
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          coverage: 'false'
+          args: |
+            --include-name-regex ${NAME} \
+            -H "Authorization: Bearer $ACCESS_TOKEN"
+
       - name: Custom hooks
         uses: ./
         with:
