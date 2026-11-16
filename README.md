@@ -52,7 +52,7 @@ Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based 
     authorization: 'Basic ${{ secrets.ENCODED_CREDENTIALS }}'
 ```
 
-`args` passes extra flags to `schemathesis run`. See the [CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/) for the full list.
+`args` passes extra flags to `schemathesis run`. See the [CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/) for the full list. The action splits `args` the way a shell does, so quote arguments that contain spaces. It expands `$VAR` and `${VAR}` from the environment, even inside single quotes, and passes `$(...)`, backticks, globs and braces through as literal text.
 
 `checks` and `max-examples` override `schemathesis.toml` when set. Leave them out to use the config file. `wait-for-schema` always overrides it, so set the wait with the input.
 
