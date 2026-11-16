@@ -203,6 +203,26 @@ jobs:
       - name: Verify coverage report with a quoted path
         run: test -f "it's.html"
 
+      - name: Reports
+        id: reports
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          authorization: 'Bearer ${{ env.ACCESS_TOKEN }}'
+          report: 'json,junit'
+          report-artifact-name: 'schemathesis-report-test'
+          coverage-artifact-name: 'schema-coverage-reports'
+          coverage-pr-comment: 'false'
+          coverage-step-summary: 'false'
+          args: '--include-name-regex success'
+
+      - name: Verify reports
+        run: |
+          test "$REPORT_PATH" = "schemathesis-report"
+          ls "$REPORT_PATH"/json-*.json "$REPORT_PATH"/junit-*.xml
+        env:
+          REPORT_PATH: ${{ steps.reports.outputs.report-path }}
+
   grpc:
     runs-on: ubuntu-22.04
     name: Test gRPC

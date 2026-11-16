@@ -61,10 +61,23 @@ inputs:
     description: 'Write coverage summary to the workflow step summary'
     required: false
     default: 'true'
+  report:
+    description: 'Comma-separated report formats to write to `schemathesis-report/` and upload as a workflow artifact (e.g. `junit,json`)'
+    required: false
+  report-artifact-name:
+    description: 'Name of the uploaded report artifact. Override when using the action multiple times in one workflow to avoid name collisions.'
+    required: false
+    default: 'schemathesis-report'
 outputs:
   coverage-report-url:
     description: 'URL of the uploaded HTML coverage report artifact. Empty when coverage or the upload is off.'
     value: ${{ steps.upload.outputs.artifact-url }}
+  report-path:
+    description: 'Directory with the reports, empty when `report` is not set'
+    value: ${{ inputs.report != '' && 'schemathesis-report' || '' }}
+  report-url:
+    description: 'URL of the uploaded report artifact'
+    value: ${{ steps.report-upload.outputs.artifact-url }}
 runs:
   using: 'composite'
   steps:
@@ -183,6 +196,9 @@ runs:
         if [[ -n "$CHECKS" ]]; then
           CMD+=(--checks="$CHECKS")
         fi
+        if [[ -n "$REPORT" ]]; then
+          CMD+=(--report="$REPORT")
+        fi
 
         if [[ -n "$AUTHORIZATION" ]]; then
           CMD+=(-H "Authorization: $AUTHORIZATION")
@@ -196,6 +212,7 @@ runs:
         SCHEMA: ${{ inputs.schema }}
         CHECKS: ${{ inputs.checks }}
         MAX_EXAMPLES: ${{ inputs.max-examples }}
+        REPORT: ${{ inputs.report }}
         CONFIG_FILE: ${{ inputs.config-file }}
         ARGS: ${{ inputs.args }}
         AUTHORIZATION: ${{ inputs.authorization }}
@@ -222,6 +239,13 @@ runs:
       with:
         name: ${{ inputs.coverage-artifact-name }}
         path: ${{ inputs.coverage-report-path }}
+        if-no-files-found: warn
+    - id: report-upload
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: always() && inputs.report != ''
+      with:
+        name: ${{ inputs.report-artifact-name }}
+        path: schemathesis-report/
         if-no-files-found: warn
     - if: always()
       run: |
