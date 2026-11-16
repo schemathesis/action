@@ -61,6 +61,10 @@ inputs:
     description: 'Write coverage summary to the workflow step summary'
     required: false
     default: 'true'
+outputs:
+  coverage-report-url:
+    description: 'URL of the uploaded HTML coverage report artifact. Empty when coverage or the upload is off.'
+    value: ${{ steps.upload.outputs.artifact-url }}
 runs:
   using: 'composite'
   steps:
@@ -211,7 +215,8 @@ runs:
         COVERAGE: ${{ steps.target.outputs.coverage }}
         STEP_SUMMARY: ${{ inputs.coverage-step-summary }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
-    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+    - id: upload
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always() && steps.target.outputs.coverage == 'true' && inputs['coverage-report'] == 'true'
       with:
         name: ${{ inputs.coverage-artifact-name }}
@@ -235,9 +240,6 @@ runs:
           exit 0
         fi
 
-        ARTIFACT_ID=$(gh api "repos/$REPO/actions/runs/$RUN_ID/artifacts" \
-          --jq ".artifacts[] | select(.name == \"$ARTIFACT_NAME\") | .id" 2>/dev/null | head -1)
-
         {
           echo "$MARKER"
           if [[ "$ARTIFACT_NAME" != "schema-coverage-report" ]]; then
@@ -245,9 +247,9 @@ runs:
             echo ""
           fi
           cat "$TMP_DIR/coverage.md"
-          if [[ -n "$ARTIFACT_ID" ]]; then
+          if [[ -n "$ARTIFACT_URL" ]]; then
             echo ""
-            echo "[Download full HTML report](https://github.com/$REPO/actions/runs/$RUN_ID/artifacts/$ARTIFACT_ID)"
+            echo "[Download full HTML report]($ARTIFACT_URL)"
           fi
         } > "$TMP_DIR/pr_body.md"
 
@@ -271,7 +273,7 @@ runs:
         EVENT: ${{ github.event_name }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         REPO: ${{ github.repository }}
-        RUN_ID: ${{ github.run_id }}
         ARTIFACT_NAME: ${{ inputs.coverage-artifact-name }}
+        ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
         GH_TOKEN: ${{ github.token }}

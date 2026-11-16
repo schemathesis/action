@@ -48,6 +48,7 @@ jobs:
         run: cat apps/python/secret.json | python3 -c "import sys, json; print(f'ACCESS_TOKEN={json.load(sys.stdin)[\"access_token\"]}')" >> $GITHUB_ENV
 
       - name: Default test
+        id: default
         uses: ./
         with:
           schema: 'http://127.0.0.1:5001/openapi.json'
@@ -58,6 +59,14 @@ jobs:
 
       - name: Verify HTML coverage report generated
         run: test -f schema-coverage.html && echo "OK"
+
+      # The job has no `actions: read`, so the URL can only come from the upload step
+      - name: Verify coverage report URL output
+        run: |
+          echo "coverage-report-url: $URL"
+          [[ "$URL" =~ ^"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts/"[0-9]+$ ]]
+        env:
+          URL: ${{ steps.default.outputs.coverage-report-url }}
 
       - name: Authorization via args (backwards compat)
         uses: ./
