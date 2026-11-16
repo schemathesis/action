@@ -33,7 +33,10 @@ Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based 
     # Authorization header value
     authorization: 'Bearer ${{ secrets.API_TOKEN }}'
     # Extra CLI arguments
-    args: '--report=junit'
+    args: '--exclude-deprecated'
+    # Report formats to write and upload as an artifact (default: none)
+    report: 'junit,json'
+    report-artifact-name: 'schemathesis-report'
     # Track schema coverage (default: true)
     coverage: 'true'
     # Upload the HTML coverage report as an artifact (default: true)
@@ -134,16 +137,24 @@ Each artifact name gets its own PR comment, labelled with that name. Set `covera
 | Output | Description |
 | --- | --- |
 | `coverage-report-url` | URL of the uploaded HTML coverage report artifact. Empty when `coverage` or `coverage-report` is `'false'`. |
+| `report-path` | Directory with the reports. Empty when `report` is not set. |
+| `report-url` | URL of the uploaded report artifact. Empty when `report` is not set. |
 
-## Test results in the job summary
+## Reports
 
-With `--report=junit`, Schemathesis writes a JUnit XML file to `schemathesis-report/`. Publish it with [dorny/test-reporter](https://github.com/dorny/test-reporter):
+`report` takes a comma-separated list of [report formats](https://schemathesis.readthedocs.io/en/stable/reference/cli/), such as `junit` or `json`. Schemathesis writes them to `schemathesis-report/`, and the action uploads that directory as the `schemathesis-report` artifact, even when Schemathesis finds failures.
+
+When the action runs more than once in a workflow, give each run its own `report-artifact-name`, as with `coverage-artifact-name`.
+
+### Test results in the job summary
+
+Publish the JUnit XML file with [dorny/test-reporter](https://github.com/dorny/test-reporter):
 
 ```yaml
 - uses: schemathesis/action@v3
   with:
     schema: 'http://example.com/api/openapi.json'
-    args: '--report=junit'
+    report: 'junit'
 
 - name: Publish test report
   uses: dorny/test-reporter@v2
@@ -152,18 +163,15 @@ With `--report=junit`, Schemathesis writes a JUnit XML file to `schemathesis-rep
     name: Schemathesis
     path: schemathesis-report/*.xml
     reporter: java-junit
-
-- name: Upload test results
-  uses: actions/upload-artifact@v7
-  if: always()
-  with:
-    name: schemathesis-results
-    path: schemathesis-report/
 ```
 
-dorny/test-reporter needs `checks: write` permission. Both steps use `if: always()` because the action step fails when Schemathesis finds a problem.
+dorny/test-reporter needs `checks: write` permission. The step uses `if: always()` because the action step fails when Schemathesis finds a problem.
 
 ![JUnit test report in the job summary](./images/gha-run-report.png)
+
+### Machine-readable results
+
+`report: 'json'` writes the run's results to one JSON file. Download the artifact and hand the file to a script or an AI assistant to triage the failures.
 
 ## Resources
 
