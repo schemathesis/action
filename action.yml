@@ -67,6 +67,7 @@ runs:
     - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       with:
         version: ">=0.5.0"
+        enable-cache: false
     # Fresh per invocation, so a run never picks up files from an earlier one
     - id: tmp
       run: echo "dir=$(mktemp -d "$RUNNER_TEMP/schemathesis-XXXXXX")" >> "$GITHUB_OUTPUT"
