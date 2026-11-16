@@ -89,7 +89,7 @@ The job summary looks like this:
 
 ![Coverage summary in the job summary](./images/gha-cov-report.png)
 
-For PR comments, grant the job `pull-requests: write`. Add `actions: read` so the comment can link to the HTML report artifact. A job-level `permissions` block drops every permission you don't list, so keep `contents: read` for `actions/checkout`:
+For PR comments, grant the job `pull-requests: write`. A job-level `permissions` block drops every permission you don't list, so keep `contents: read` for `actions/checkout`:
 
 ```yaml
 jobs:
@@ -97,14 +97,13 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      actions: read
     steps:
       - uses: schemathesis/action@v3
         with:
           schema: 'http://example.com/api/openapi.json'
 ```
 
-The action updates its own comment on each push instead of posting a new one. Without these permissions, or on pull requests from forks where the token is read-only, the action skips the comment and the step still passes.
+The action updates its own comment on each push instead of posting a new one. Without `pull-requests: write`, or on pull requests from forks where the token is read-only, the action skips the comment and the step still passes.
 
 To turn coverage off:
 
@@ -129,6 +128,12 @@ Each run uploads an artifact, and artifact names must be unique within a workflo
 ```
 
 Each artifact name gets its own PR comment, labelled with that name. Set `coverage-pr-comment: 'false'` on the runs whose comment you don't need. In a single job, set `coverage-step-summary: 'false'` on all but one run to keep the job summary readable.
+
+## Outputs
+
+| Output | Description |
+| --- | --- |
+| `coverage-report-url` | URL of the uploaded HTML coverage report artifact. Empty when `coverage` or `coverage-report` is `'false'`. |
 
 ## Test results in the job summary
 
