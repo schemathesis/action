@@ -47,6 +47,8 @@ Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based 
     coverage-pr-comment: 'true'
     # Add the coverage summary to the job summary (default: true)
     coverage-step-summary: 'true'
+    # List the failures found by Schemathesis in the job summary (default: true)
+    failures-step-summary: 'true'
 ```
 
 `authorization` sets the full `Authorization` header, so any scheme works:
@@ -58,6 +60,20 @@ Run [Schemathesis](https://github.com/schemathesis/schemathesis) property-based 
 `args` passes extra flags to `schemathesis run`. See the [CLI reference](https://schemathesis.readthedocs.io/en/stable/reference/cli/) for the full list. The action splits `args` the way a shell does, so quote arguments that contain spaces. It expands `$VAR` and `${VAR}` from the environment, even inside single quotes, and passes `$(...)`, backticks, globs and braces through as literal text.
 
 `checks` and `max-examples` override `schemathesis.toml` when set. Leave them out to use the config file. `wait-for-schema` always overrides it, so set the wait with the input.
+
+## Failures in the job summary
+
+When Schemathesis finds failures, the job summary shows a table of the failing operations and the failures found in each. Reproduction steps are in the step log.
+
+The action reads the failures from a Schemathesis JSON report in a temporary directory. If you configure the JSON report yourself (`report: 'json'`, `--report=json` or `--report-json-path` in `args`, `[reports.json]` in `schemathesis.toml`), your report keeps its path and the list is skipped. Schemathesis versions without `--report-json-path` skip it too.
+
+The `failures-summary` output holds the path to the list in Markdown. It is empty when the run has no failures.
+
+To turn the list off:
+
+```yaml
+    failures-step-summary: 'false'
+```
 
 ## gRPC
 
