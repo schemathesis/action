@@ -178,6 +178,40 @@ jobs:
           coverage-artifact-name: 'schema-coverage-custom'
           args: '--include-name-regex success'
 
+      - name: Failing run
+        id: failing
+        continue-on-error: true
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          coverage: 'false'
+          args: '--include-name-regex failure'
+
+      - name: Verify failures summary
+        run: |
+          test "$OUTCOME" = "failure"
+          grep -F '| `GET /failure` | Server error' "$SUMMARY"
+        env:
+          OUTCOME: ${{ steps.failing.outcome }}
+          SUMMARY: ${{ steps.failing.outputs.failures-summary }}
+
+      # The action must not redirect a JSON report the user asks for
+      - name: Failing run with the user's own JSON report
+        id: failing-user-report
+        continue-on-error: true
+        uses: ./
+        with:
+          schema: 'http://127.0.0.1:5001/openapi.json'
+          coverage: 'false'
+          args: '--include-name-regex failure --report=json --report-dir=user-report'
+
+      - name: Verify the user's JSON report is untouched
+        run: |
+          ls user-report/json-*.json
+          test -z "$SUMMARY"
+        env:
+          SUMMARY: ${{ steps.failing-user-report.outputs.failures-summary }}
+
       # A run that fails before writing coverage must not reuse files from an earlier run
       - name: Unreachable schema
         continue-on-error: true

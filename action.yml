@@ -68,6 +68,10 @@ inputs:
     description: 'Name of the uploaded report artifact. Override when using the action multiple times in one workflow to avoid name collisions.'
     required: false
     default: 'schemathesis-report'
+  failures-step-summary:
+    description: 'Write the failures found by Schemathesis to the workflow step summary'
+    required: false
+    default: 'true'
 outputs:
   coverage-report-url:
     description: 'URL of the uploaded HTML coverage report artifact. Empty when coverage or the upload is off.'
@@ -78,6 +82,9 @@ outputs:
   report-url:
     description: 'URL of the uploaded report artifact'
     value: ${{ steps.report-upload.outputs.artifact-url }}
+  failures-summary:
+    description: 'Path to the failures summary in Markdown. Empty when the run has no failures or the summary is off.'
+    value: ${{ steps.failures.outputs.path }}
 runs:
   using: 'composite'
   steps:
@@ -212,6 +219,13 @@ runs:
           CMD+=("$ARG")
         done < "$TMP_DIR/args"
 
+        # A JSON report the user configures keeps its path, and older versions lack the flag
+        if [[ "$FAILURES_SUMMARY" == "true" && "$REPORT" != *json* && "$ARGS" != *--report*json* ]] \
+          && ! grep -qsF 'reports.json' "${CONFIG_FILE:-schemathesis.toml}" \
+          && [[ "$(schemathesis run --help)" == *--report-json-path* ]]; then
+          CMD+=(--report-json-path="$TMP_DIR/report.json")
+        fi
+
         "${CMD[@]}"
       shell: bash
       env:
@@ -224,6 +238,7 @@ runs:
         AUTHORIZATION: ${{ inputs.authorization }}
         COVERAGE: ${{ steps.target.outputs.coverage }}
         COVERAGE_REPORT_PATH: ${{ inputs.coverage-report-path }}
+        FAILURES_SUMMARY: ${{ inputs.failures-step-summary }}
         EVENT: ${{ github.event_name }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
         SCHEMATHESIS_HOOKS: ${{ steps.hooks.outputs.path }}
@@ -233,6 +248,39 @@ runs:
         PYTHONUTF8: '1'
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}
         SCHEMATHESIS_WAIT_FOR_SCHEMA: ${{ inputs.wait-for-schema }}
+    - id: failures
+      if: always()
+      run: |
+        if [[ -f "$TMP_DIR/report.json" ]]; then
+          uv run --no-project --python 3.13 python -I -X utf8 -c '
+        import json, sys
+        with open(sys.argv[1], encoding="utf-8") as fd:
+            report = json.load(fd)
+        failed = {}
+        for failure in report["failures"]:
+            for operation in failure["operations"] or [""]:
+                failed.setdefault(operation, []).append(failure["title"])
+        header = "| | Operation | Failures |\n|:---:|-----------|----------|"
+        rows = []
+        for operation, titles in failed.items():
+            label = "`%s`" % operation.replace("|", "\\|") if operation else "Whole run"
+            rows.append("| \u274c | %s | %s |" % (label, "<br>".join(titles)))
+        if rows:
+            total = report["operations"]["tested"]
+            noun = "operation" if total == 1 else "operations"
+            print("## %d of %d %s failed.\n\n%s" % (len(failed) - ("" in failed), total, noun, header), *rows[:10], sep="\n")
+            if rows[10:]:
+                print("\n<details>\n<summary>%d more</summary>\n\n%s" % (len(rows) - 10, header), *rows[10:], "\n</details>", sep="\n")
+            print("\n---\n")
+        ' "$TMP_DIR/report.json" > "$TMP_DIR/failures.md"
+          if [[ -s "$TMP_DIR/failures.md" ]]; then
+            cat "$TMP_DIR/failures.md" >> "$GITHUB_STEP_SUMMARY"
+            echo "path=$TMP_DIR/failures.md" >> "$GITHUB_OUTPUT"
+          fi
+        fi
+      shell: bash
+      env:
+        TMP_DIR: ${{ steps.tmp.outputs.dir }}
     - if: always()
       run: |
         if [[ "$COVERAGE" == 'true' && "$STEP_SUMMARY" == 'true' && -f "$TMP_DIR/coverage.md" ]]; then
