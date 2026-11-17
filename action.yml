@@ -142,14 +142,13 @@ runs:
         HOOK_FILE="$TMP_DIR/hooks.py"
 
         if [[ "$COVERAGE" == "true" ]]; then
-          printf '%s' "$USER_HOOKS" > "$TMP_DIR/user_hooks.txt"
+          # No paths in the source: backslashes in Windows paths are escapes in a Python literal
           {
             echo 'import tracecov.schemathesis'
             echo 'tracecov.schemathesis.install()'
             echo ''
             echo 'import os, sys, importlib.util'
-            echo "with open(\"$TMP_DIR/user_hooks.txt\") as _f:"
-            echo '    _user_hooks = _f.read()'
+            echo '_user_hooks = os.environ.get("SCHEMATHESIS_ACTION_USER_HOOKS")'
             echo 'if _user_hooks:'
             echo '    if os.path.isfile(_user_hooks):'
             echo '        _spec = importlib.util.spec_from_file_location("_hooks", _user_hooks)'
@@ -228,6 +227,10 @@ runs:
         EVENT: ${{ github.event_name }}
         TMP_DIR: ${{ steps.tmp.outputs.dir }}
         SCHEMATHESIS_HOOKS: ${{ steps.hooks.outputs.path }}
+        # Read by the generated hooks wrapper
+        SCHEMATHESIS_ACTION_USER_HOOKS: ${{ inputs.hooks }}
+        # Windows runners pipe output as cp1252, which cannot encode the CLI's box-drawing characters
+        PYTHONUTF8: '1'
         SCHEMATHESIS_BASE_URL: ${{ inputs.base-url }}
         SCHEMATHESIS_WAIT_FOR_SCHEMA: ${{ inputs.wait-for-schema }}
     - if: always()
